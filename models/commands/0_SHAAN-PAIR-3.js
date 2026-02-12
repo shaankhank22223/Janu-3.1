@@ -2,7 +2,7 @@ module.exports.config = {
   name: "pair3",
   version: "1.0.0",
   hasPermssion: 0,
-  credits: "ARIF BABU",
+  credits: "SHAAN BABU",
   description: "It's a compound :>",
   commandCategory: "Giải trí",
   usages: "",
