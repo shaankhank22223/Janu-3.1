@@ -1,10 +1,10 @@
 module.exports = {
   config: {
     name: "linkAutoDownload",
-    version: "1.4.0",
+    version: "1.5.0",
     hasPermssion: 0,
     credits: "Shaan Babu",
-    description: "Automatically detects links and downloads with platform title.",
+    description: "Downloads video and shows its original title.",
     commandCategory: "Utilities",
     usages: "",
     cooldowns: 5,
@@ -31,13 +31,6 @@ module.exports = {
     const body = (event.body || "").trim();
     if (!body.startsWith("https://")) return;
 
-    // Platform detection logic
-    let platform = "Video";
-    if (body.includes("facebook.com") || body.includes("fb.watch")) platform = "Facebook";
-    else if (body.includes("instagram.com")) platform = "Instagram";
-    else if (body.includes("tiktok.com")) platform = "TikTok";
-    else if (body.includes("youtube.com") || body.includes("youtu.be")) platform = "YouTube";
-
     try {
       api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
@@ -47,6 +40,9 @@ module.exports = {
         return api.sendMessage("❌ Valid download link not found.", event.threadID);
       }
 
+      // Video ka title nikalne ki koshish (Agar api provide karti hai)
+      // Aksar data.data.title ya data.title mein hota hai
+      const videoTitle = data.data.title || data.title || "No Title Found";
       const videoURL = data.data.high;
       const filePath = __dirname + `/cache/auto_${event.senderID}.mp4`;
 
@@ -57,16 +53,17 @@ module.exports = {
 
       return api.sendMessage(
         {
-          body: `✨❁ ━━ ━[ 𝐎𝐖𝐍𝐄𝐑 ]━ ━━ ❁✨\n\nᴛɪᴛʟᴇ: ${platform}\n\n✨❁ ━━ ━[ 𝑺𝑯𝑨𝑨𝑵 ]━ ━━ ❁✨`,
+          body: `✨❁ ━━ ━[ 𝐎𝐖𝐍𝐄𝐑 ]━ ━━ ❁✨\n\nᴛɪᴛʟᴇ: ${videoTitle}\n\n✨❁ ━━ ━[ 𝑺𝑯𝑨𝑨𝑵 ]━ ━━ ❁✨`,
           attachment: fs.createReadStream(filePath),
         },
         event.threadID,
-        () => fs.unlinkSync(filePath), // Delete file after sending
+        () => {
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        },
         event.messageID
       );
     } catch (err) {
       api.setMessageReaction("❌", event.messageID, () => {}, true);
-      // console.error(err);
     }
   },
 };
